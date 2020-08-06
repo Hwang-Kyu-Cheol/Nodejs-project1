@@ -2,42 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const url = require('url');
 const qs = require('querystring');
-
-function makeFileList(fileArray){
-    let fileList = '<ul>';
-    for(let i = 0; i<fileArray.length; i++){
-        fileList = fileList + `<li><a href="/?id=${fileArray[i]}">${fileArray[i]}</a></li>`
-    }
-    fileList = fileList + '</ul>';
-    return fileList;
-}
-
-function makeHTML(title, context, fileList, controls){
-    const template = `
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>WEB - ${title}</title>
-        </head>
-        <body>
-            <h1><a href="/">WEB</a></h1>
-            ${fileList}
-            ${controls}
-            <hr>
-            ${context}
-        </body>
-    </html>
-    `;
-    return template;
-}
-
-function makeBody(title, data){
-    const template = `
-    <h2>${title}</h2>
-    <div>${data}</div>        
-    `;
-    return template; 
-}
+const makeTemplate = require('./lib/template.js');
 
 const app = http.createServer(function(request, response){
     const rq_url = request.url;
@@ -48,9 +13,9 @@ const app = http.createServer(function(request, response){
         if(queryData.id === undefined){
             fs.readdir('./data', function(error, fileArray){
                 const title = 'Welcome';
-                const context = makeBody(title, 'Welcome to WEB');
-                const fileList = makeFileList(fileArray);
-                const template = makeHTML(title, context, fileList, '<a href="/create">create</a>');
+                const context = makeTemplate.body(title, 'Welcome to WEB');
+                const fileList = makeTemplate.fileList(fileArray);
+                const template = makeTemplate.html(title, context, fileList, '<a href="/create">create</a>');
                 response.writeHead(200);
                 response.end(template); 
             });
@@ -58,9 +23,9 @@ const app = http.createServer(function(request, response){
             fs.readdir('./data', function(error, fileArray){
                 fs.readFile(`data/${queryData.id}`, 'utf8', function(err, data){
                     const title = queryData.id;
-                    const context = makeBody(title, data);
-                    const fileList = makeFileList(fileArray);
-                    const template = makeHTML(title, context, fileList, `<a href="/create">create</a><a href="/update?id=${title}">update</a><a href="/process_delete?id=${title}">delete</a>`);
+                    const context = makeTemplate.body(title, data);
+                    const fileList = makeTemplate.fileList(fileArray);
+                    const template = makeTemplate.html(title, context, fileList, `<a href="/create">create</a><a href="/update?id=${title}">update</a><a href="/process_delete?id=${title}">delete</a>`);
                     response.writeHead(200);
                     response.end(template);        
                 });
@@ -77,9 +42,9 @@ const app = http.createServer(function(request, response){
                 <p><input type="submit" value="OK"><p>
             </form>            
             `;
-            const context = makeBody(title, form);
-            const fileList = makeFileList(fileArray);
-            const template = makeHTML(title, context, fileList, '');
+            const context = makeTemplate.body(title, form);
+            const fileList = makeTemplate.fileList(fileArray);
+            const template = makeTemplate.html(title, context, fileList, '');
             response.writeHead(200);
             response.end(template); 
         });
@@ -113,9 +78,9 @@ const app = http.createServer(function(request, response){
                     <p><input type="submit" value="OK"><p>
                 </form>            
                 `;
-                const context = makeBody(title, form);
-                const fileList = makeFileList(fileArray);
-                const template = makeHTML(title, context, fileList, '');
+                const context = makeTemplate.body(title, form);
+                const fileList = makeTemplate.fileList(fileArray);
+                const template = makeTemplate.html(title, context, fileList, '');
                 response.writeHead(200);
                 response.end(template); 
             });
